@@ -1,0 +1,14 @@
+schema {
+    mutation: Mutation
+    query: Query
+}
+
+type Mutation {
+    analyze(data: String): Hoge
+}
+
+type Query {
+  hoge: Hoge
+}
+
+type Hoge {}
