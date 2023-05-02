@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as appsync from 'aws-cdk-lib/aws-appsync';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,7 +32,7 @@ export class AppsyncWithHttpResolverStack extends cdk.Stack {
 
     // Create a new ssm parameter for the API key
     const parameterName = 'sampleAzureReadApiKey';
-    new ssm.StringParameter(this, 'ApiKeyParameter', {
+    const apiKeySsm = new ssm.StringParameter(this, 'ApiKeyParameter', {
       parameterName,
       stringValue: AZURE_COGNITIVE_SERVICES_KEY,
     });
@@ -77,5 +78,13 @@ export class AppsyncWithHttpResolverStack extends cdk.Stack {
           #end
         `),
       });
+
+    // Add permissions to the IAM role
+    dataSource.grantPrincipal.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['ssm:GetParameter'],
+        resources: [apiKeySsm.parameterArn],
+      })
+    );
   }
 }
