@@ -1,14 +1,59 @@
-schema {
-    mutation: Mutation
-    query: Query
-}
-
 type Mutation {
-    analyze(data: String): Hoge
+	readRequest(url: String!): ReadRequestID!
 }
 
 type Query {
-  hoge: Hoge
+	readResult(requestId: String!): ReadResultResponse
 }
 
-type Hoge {}
+# readRequestのレスポンスで、readResultのインプット
+type ReadRequestID {
+	requestId: String!
+}
+
+# readResultのレスポンス
+type ReadResultResponse {
+	status: String
+	createdDateTime: AWSDateTime
+	lastUpdatedDateTime: AWSDateTime
+	analyzeResult: AnalyzeResult
+}
+
+type AnalyzeResult {
+	version: String
+	modelVersion: String
+	readResults: [ReadResult]
+}
+
+type ReadResult {
+	page: Int
+	angle: Float
+	width: Int
+	height: Int
+	unit: String
+	lines: [ReadResultLine]
+}
+
+# ここのtextにOCRの結果が入る
+type ReadResultLine {
+	boundingBox: [Int]
+	text: String
+	appearance: ReadRsultAppearance
+	words: [ReadResultWord]
+}
+
+type ReadRsultAppearance {
+	style: ReadResultStyle
+}
+# confidenceに自信度が入るが、あてにならない
+type ReadResultStyle {
+	name: String
+	confidence: Float
+}
+
+# ここのtextはLineのtextを細かく分割したもの
+type ReadResultWord {
+	boundingBox: [Int]
+	text: String
+	confidence: Float
+}
