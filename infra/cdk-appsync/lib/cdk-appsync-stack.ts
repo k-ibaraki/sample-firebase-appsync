@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import * as appsync from 'aws-cdk-lib/aws-appsync';
 import { Construct } from 'constructs';
 import * as dotenv from 'dotenv';
+import getUrlReadHttpResolver from './resolvers/getUrlReadHttpResolver';
+import getReadResultHttpResolver from './resolvers/getReadResultHttpResolver';
 
 dotenv.config();
 
@@ -33,72 +35,9 @@ export class AppsyncWithHttpResolverStack extends cdk.Stack {
     });
 
     // Create a new resolver for the HTTP data source
-    const readHttpResolver = dataSource.createResolver("ReadHttpResolver",
-      {
-        typeName: 'Mutation',
-        fieldName: 'readRequest',
-        requestMappingTemplate: appsync.MappingTemplate.fromString(`
-          #set($apiKey = "${AZURE_COGNITIVE_SERVICES_KEY}")
-          {
-            "version": "2018-05-29",
-            "method": "POST",
-            "resourcePath": "/vision/v3.2/read/analyze",
-            "params": {
-              "headers": {
-                "Ocp-Apim-Subscription-Key": "$apiKey",
-                "Content-Type": "application/json"
-              },
-              "query": {
-                "language": "ja",
-                "model-version": "2022-04-30",
-                "readingOrder": "natural"
-              },
-              "body": {
-                "url" : "$ctx.args.url"
-              }
-            }
-          }
-        `),
-        responseMappingTemplate: appsync.MappingTemplate.fromString(`
-          #if($ctx.error)
-            $util.error($ctx.error.message, $ctx.error.type)
-          #end
-          #if($ctx.result.statusCode == 202)
-            { "requestId" : "$ctx.result.headers.apim-request-id" }
-          #else
-            $utils.appendError($ctx.result.body, "$ctx.result.statusCode")
-          #end
-        `),
-      });
-
-    const readResultHttpResolver = dataSource.createResolver("ReadResultHttpResolver",
-      {
-        typeName: 'Query',
-        fieldName: 'readResult',
-        requestMappingTemplate: appsync.MappingTemplate.fromString(`
-          #set($apiKey = "${AZURE_COGNITIVE_SERVICES_KEY}")
-          {
-            "version": "2018-05-29",
-            "method": "GET",
-            "resourcePath": "/vision/v3.2/read/analyzeResults/$ctx.args.requestId",
-            "params": {
-              "headers": {
-                "Ocp-Apim-Subscription-Key": "$apiKey",
-                "Content-Type": "application/json"
-              }
-            }
-          }
-        `),
-        responseMappingTemplate: appsync.MappingTemplate.fromString(`
-          #if($ctx.error)
-            $util.error($ctx.error.message, $ctx.error.type)
-          #end
-          #if($ctx.result.statusCode == 200)
-            $ctx.result.body
-          #else
-            $utils.appendError($ctx.result.body, "$ctx.result.statusCode")
-          #end
-        `),
-      });
+    const urlReadHttpResolver = getUrlReadHttpResolver(
+      dataSource, AZURE_COGNITIVE_SERVICES_KEY);
+    const readResultHttpResolver = getReadResultHttpResolver(
+      dataSource, AZURE_COGNITIVE_SERVICES_KEY);
   }
 }

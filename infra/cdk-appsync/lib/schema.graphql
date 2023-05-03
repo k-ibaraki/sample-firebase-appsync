@@ -1,5 +1,5 @@
 type Mutation {
-	readRequest(url: String!): ReadRequestID!
+	readRequestUrl(url: String!): ReadRequestID!
 }
 
 type Query {
