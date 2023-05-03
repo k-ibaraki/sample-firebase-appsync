@@ -1,6 +1,7 @@
 # sample-firebase-appsync
-
-`Firebase Authentication` で認証して `Azure Cognitive Service`のRead APIでOCRを実行するGraphQLのAPIを`AWS AppSync`上に構築しました
+`Azure Cognitive Service` の Read API を使って OCR を実施するGraphQLのAPIを、
+`AWS AppSync` で構築して、
+`Firebase Authentication` で認証を付けました。
 
 ![](./doc/architecture.drawio.svg)
 
